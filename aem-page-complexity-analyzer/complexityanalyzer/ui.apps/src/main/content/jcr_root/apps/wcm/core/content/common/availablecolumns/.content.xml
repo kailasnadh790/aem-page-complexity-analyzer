@@ -99,7 +99,7 @@
         jcr:primaryType="nt:unstructured"
         jcr:title="Node Count"
         columnGroup="metadata"
-        default="{Boolean}false"
+        default="{Boolean}true"
         page-info-provider="nodecount"
         page-info-provider-property="nodeCount"
         sortable="{Boolean}true"
