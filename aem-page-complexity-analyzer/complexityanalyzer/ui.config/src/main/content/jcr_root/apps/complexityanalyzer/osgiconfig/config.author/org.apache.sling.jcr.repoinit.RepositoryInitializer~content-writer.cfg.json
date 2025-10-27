@@ -1,0 +1,6 @@
+{
+    "scripts": [
+      "create service user nodecount-updater with forced path system/cq:services/wknd",
+      "set principal ACL for nodecount-updater \n  allow jcr:read,jcr:addChildNodes,jcr:modifyProperties,jcr:removeNode,jcr:removeChildNodes,rep:write on /content \nend"
+    ]
+  }

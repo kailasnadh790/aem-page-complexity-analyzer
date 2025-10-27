@@ -1,0 +1,5 @@
+{
+    "user.mapping":[
+      "com.adobe.complexityanalyzer.core:nodecount-updater=[nodecount-updater]"
+    ]
+}

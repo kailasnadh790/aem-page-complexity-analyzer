@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspaceFilter version="1.0">
+    <filter root="/conf/complexityanalyzer" mode="merge"/>
+    <filter root="/content/complexityanalyzer" mode="merge"/>
+    <filter root="/content/dam/complexityanalyzer/asset.jpg" mode="merge"/>
+    <filter root="/content/experience-fragments/complexityanalyzer" mode="merge"/>
+</workspaceFilter>
