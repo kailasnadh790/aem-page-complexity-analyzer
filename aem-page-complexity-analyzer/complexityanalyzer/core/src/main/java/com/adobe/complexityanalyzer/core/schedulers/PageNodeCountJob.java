@@ -29,6 +29,8 @@ public class PageNodeCountJob implements Runnable {
     private String rootPath;
     private boolean enabled;
     private String schedulerExpression;
+    private int highThreshold;
+    private int mediumThreshold;
 
     @Activate
     @Modified
@@ -36,9 +38,11 @@ public class PageNodeCountJob implements Runnable {
         this.rootPath = config.rootPath();
         this.enabled = config.enabled();
         this.schedulerExpression = config.scheduler_expression();
+        this.highThreshold = config.highThreshold();
+        this.mediumThreshold = config.mediumThreshold();
         
-        LOG.info("Activating PageNodeCountJob - enabled: {}, rootPath: {}, expression: {}", 
-                enabled, rootPath, schedulerExpression);
+        LOG.info("Activating PageNodeCountJob - enabled: {}, rootPath: {}, expression: {}, highThreshold: {}, mediumThreshold: {}", 
+                enabled, rootPath, schedulerExpression, highThreshold, mediumThreshold);
         
         // Remove existing scheduled job
         scheduler.unschedule(JOB_NAME);
@@ -120,30 +124,29 @@ public class PageNodeCountJob implements Runnable {
                 
                 Resource jcrContent = child.getChild("jcr:content");
                 if (jcrContent != null) {
-                    int count = countAllDescendants(jcrContent);
-                    LOG.debug("Total descendants count for {}: {}", pagePath, count);
+                    String complexity = determineComplexity(jcrContent);
+                    LOG.debug("Complexity level for {}: {}", pagePath, complexity);
                     
                     try {
                         ModifiableValueMap props = jcrContent.adaptTo(ModifiableValueMap.class);
                         if (props != null) {
-                            String oldValue = props.get("nodeCount", String.class);
-                            String newValue = String.valueOf(count);
+                            String oldValue = props.get("complexity", String.class);
                             
                             // Always overwrite the property, even if it exists
-                            props.put("nodeCount", newValue);
+                            props.put("complexity", complexity);
                             rr.commit();
                             pagesProcessed.incrementAndGet();
                             
                             if (oldValue != null) {
-                                LOG.debug("Overwritten nodeCount for page: {} (old={}, new={})", pagePath, oldValue, newValue);
+                                LOG.debug("Overwritten complexity for page: {} (old={}, new={})", pagePath, oldValue, complexity);
                             } else {
-                                LOG.debug("Set nodeCount={} for page: {}", count, pagePath);
+                                LOG.debug("Set complexity={} for page: {}", complexity, pagePath);
                             }
                         } else {
                             LOG.warn("Could not adapt jcr:content to ModifiableValueMap for: {}", pagePath);
                         }
                     } catch (PersistenceException e) {
-                        LOG.warn("Failed to persist nodeCount for page: {}", pagePath, e);
+                        LOG.warn("Failed to persist complexity for page: {}", pagePath, e);
                     }
                 } else {
                     LOG.debug("No jcr:content found for page: {}", pagePath);
@@ -154,12 +157,50 @@ public class PageNodeCountJob implements Runnable {
         }
     }
 
-    private int countAllDescendants(Resource resource) {
+    /**
+     * Determines the complexity level of a page based on node count.
+     * Uses early exit optimization to stop counting once a category is determined.
+     * 
+     * @param resource The jcr:content resource of the page
+     * @return Complexity level: "high" (>highThreshold), "medium" (>mediumThreshold), or "low" (<=mediumThreshold)
+     */
+    private String determineComplexity(Resource resource) {
+        if (resource == null) {
+            return "low";
+        }
+        
+        // Count up to highThreshold + 1 to determine if page is high complexity
+        int count = countWithLimit(resource, highThreshold + 1);
+        
+        if (count > highThreshold) {
+            return "high";
+        } else if (count > mediumThreshold) {
+            return "medium";
+        } else {
+            return "low";
+        }
+    }
+    
+    /**
+     * Counts descendants up to a specified limit for optimization.
+     * Stops counting once the limit is reached.
+     * 
+     * @param resource The resource to count descendants for
+     * @param limit The maximum count before stopping
+     * @return The count of descendants (may be less than actual if limit reached)
+     */
+    private int countWithLimit(Resource resource, int limit) {
         if (resource == null) {
             return 0;
         }
+        
         int count = 0;
         for (Resource child : resource.getChildren()) {
+            // Early exit if we've reached the limit
+            if (count >= limit) {
+                return count;
+            }
+            
             // Skip counting if this is a cq:Page (don't count nested pages)
             String primaryType = child.getValueMap().get("jcr:primaryType", String.class);
             if ("cq:Page".equals(primaryType)) {
@@ -167,7 +208,13 @@ public class PageNodeCountJob implements Runnable {
             }
             
             count++; // Count this child
-            count += countAllDescendants(child); // Count all its descendants recursively
+            
+            // Check limit again before recursing
+            if (count >= limit) {
+                return count;
+            }
+            
+            count += countWithLimit(child, limit - count); // Count descendants with remaining limit
         }
         return count;
     }

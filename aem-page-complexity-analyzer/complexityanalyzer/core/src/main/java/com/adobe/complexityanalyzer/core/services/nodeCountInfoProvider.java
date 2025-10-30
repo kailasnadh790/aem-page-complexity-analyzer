@@ -14,60 +14,58 @@ import org.slf4j.LoggerFactory;
 @Component(
     service = PageInfoProvider.class,
     property = {
-        "service.description=Export node count metadata related to a page",
-        "pageInfoProviderType=sites.listView.info.provider.nodecount"
+        "service.description=Export page complexity metadata related to a page",
+        "pageInfoProviderType=sites.listView.info.provider.complexity"
     },
     immediate = true
 )
 public class nodeCountInfoProvider implements PageInfoProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(nodeCountInfoProvider.class);
-    private static final String PROVIDER_TYPE = "nodecount";
+    private static final String PROVIDER_TYPE = "complexity";
 
     @Override
     public void updatePageInfo(SlingHttpServletRequest request, JSONObject info, Resource resource) throws JSONException {
         if (resource == null) {
-            LOG.warn("NodeCountInfoProvider: updatePageInfo called with null resource");
+            LOG.warn("ComplexityInfoProvider: updatePageInfo called with null resource");
             return;
         }
         
-        LOG.info("NodeCountInfoProvider: updatePageInfo called for resource path: {}", resource.getPath());
+        LOG.info("ComplexityInfoProvider: updatePageInfo called for resource path: {}", resource.getPath());
         
         Page page = resource.adaptTo(Page.class);
-        JSONObject nodecountInfo = new JSONObject();
+        JSONObject complexityInfo = new JSONObject();
 
         if (page != null) {
-            LOG.info("NodeCountInfoProvider: Page adapted successfully for path: {}", page.getPath());
+            LOG.info("ComplexityInfoProvider: Page adapted successfully for path: {}", page.getPath());
             Resource contentResource = page.getContentResource();
             
             if (contentResource != null) {
-                LOG.info("NodeCountInfoProvider: Content resource found at path: {}", contentResource.getPath());
+                LOG.info("ComplexityInfoProvider: Content resource found at path: {}", contentResource.getPath());
                 ValueMap properties = contentResource.getValueMap();
                 
-                // Try to get the property - it might be stored as different types
-                Object nodeCountObj = properties.get("nodeCount");
+                // Get the complexity property
+                String complexity = properties.get("complexity", String.class);
                 
-                if (nodeCountObj != null) {
-                    LOG.info("NodeCountInfoProvider: Found nodeCount property, type: {}, value: {}", 
-                            nodeCountObj.getClass().getName(), nodeCountObj);
+                if (complexity != null) {
+                    LOG.info("ComplexityInfoProvider: Found complexity property, value: {}", complexity);
                     
-                    String nodeCount = String.valueOf(nodeCountObj);
-                    nodecountInfo.put("nodeCount", nodeCount);
-                    LOG.info("NodeCountInfoProvider: Successfully added nodeCount='{}' to nested info for page: {}", 
-                            nodeCount, page.getPath());
+                    complexityInfo.put("complexity", complexity);
+                    LOG.info("ComplexityInfoProvider: Successfully added complexity='{}' to nested info for page: {}", 
+                            complexity, page.getPath());
                 } else {
-                    LOG.warn("NodeCountInfoProvider: nodeCount property is NULL for page: {}. Available properties: {}", 
+                    LOG.warn("ComplexityInfoProvider: complexity property is NULL for page: {}. Available properties: {}", 
                             page.getPath(), properties.keySet());
                 }
             } else {
-                LOG.warn("NodeCountInfoProvider: Content resource (jcr:content) not found for page: {}", page.getPath());
+                LOG.warn("ComplexityInfoProvider: Content resource (jcr:content) not found for page: {}", page.getPath());
             }
         } else {
-            LOG.warn("NodeCountInfoProvider: Resource could not be adapted to Page: {}", resource.getPath());
+            LOG.warn("ComplexityInfoProvider: Resource could not be adapted to Page: {}", resource.getPath());
         }
         
         // Add the nested object under the provider type
-        info.put(PROVIDER_TYPE, nodecountInfo);
-        LOG.info("NodeCountInfoProvider: Added provider data to info object under key '{}'", PROVIDER_TYPE);
+        info.put(PROVIDER_TYPE, complexityInfo);
+        LOG.info("ComplexityInfoProvider: Added provider data to info object under key '{}'", PROVIDER_TYPE);
     }
 }
