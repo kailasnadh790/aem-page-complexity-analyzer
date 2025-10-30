@@ -3,11 +3,11 @@ package com.adobe.complexityanalyzer.core.config;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
-@ObjectClassDefinition(name = "Page NodeCount Scheduler Config")
+@ObjectClassDefinition(name = "Page Complexity Analyzer Scheduler Config")
 public @interface PageNodeCountSchedulerConfig {
     @AttributeDefinition(
         name = "Enabled",
-        description = "Enable or disable the node count job"
+        description = "Enable or disable the complexity analyzer job"
     )
     boolean enabled() default true;
 
@@ -19,7 +19,19 @@ public @interface PageNodeCountSchedulerConfig {
 
     @AttributeDefinition(
         name = "Scheduler Cron Expression",
-        description = "CRON expression to run the job (e.g. '0 0 * * * ?' for every hour)"
+        description = "CRON expression to run the job (e.g. '0 0 * * * ?' for every hour, '0 * * * * ?' for every minute)"
     )
     String scheduler_expression() default "0 0 * * * ?";
+
+    @AttributeDefinition(
+        name = "High Complexity Threshold",
+        description = "Node count threshold for HIGH complexity (default: 2048). Pages with more nodes than this value are marked as 'high'"
+    )
+    int highThreshold() default 2048;
+
+    @AttributeDefinition(
+        name = "Medium Complexity Threshold",
+        description = "Node count threshold for MEDIUM complexity (default: 1024). Pages with more nodes than this value (but less than high threshold) are marked as 'medium'"
+    )
+    int mediumThreshold() default 1024;
 }

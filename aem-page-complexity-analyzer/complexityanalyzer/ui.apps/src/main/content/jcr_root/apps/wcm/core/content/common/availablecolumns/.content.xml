@@ -95,13 +95,12 @@
         configurable="{Boolean}false"
         fixedWidth="{Boolean}true"
         order="{Boolean}true"/>
-    <nodeCount
+    <complexity
         jcr:primaryType="nt:unstructured"
-        jcr:title="Node Count"
+        jcr:title="Complexity"
         columnGroup="metadata"
         default="{Boolean}true"
-        page-info-provider="nodecount"
-        page-info-provider-property="nodeCount"
-        sortable="{Boolean}true"
-        sortType="number"/>
+        page-info-provider="complexity"
+        page-info-provider-property="complexity"
+        sortable="{Boolean}true"/>
 </jcr:root>
