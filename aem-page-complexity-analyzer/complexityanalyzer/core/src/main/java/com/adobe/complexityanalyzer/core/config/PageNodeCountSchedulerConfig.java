@@ -19,9 +19,9 @@ public @interface PageNodeCountSchedulerConfig {
 
     @AttributeDefinition(
         name = "Scheduler Cron Expression",
-        description = "CRON expression to run the job (e.g. '0 0 * * * ?' for every hour, '0 * * * * ?' for every minute)"
+        description = "CRON expression to run the job (e.g. '0 0 0 * * ?' for daily at midnight, '0 0 * * * ?' for every hour, '0 * * * * ?' for every minute)"
     )
-    String scheduler_expression() default "0 0 * * * ?";
+    String scheduler_expression() default "0 0 0 * * ?";
 
     @AttributeDefinition(
         name = "High Complexity Threshold",

@@ -1,7 +1,7 @@
 {
   "enabled": true,
   "rootPath": "/content",
-  "scheduler.expression": "0 * * * * ?",
+  "scheduler.expression": "0 0 0 * * ?",
   "highThreshold": 2048,
   "mediumThreshold": 1024
 }
