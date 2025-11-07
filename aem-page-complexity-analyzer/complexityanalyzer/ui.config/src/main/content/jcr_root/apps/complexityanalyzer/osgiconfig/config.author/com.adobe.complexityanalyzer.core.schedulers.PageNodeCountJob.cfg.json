@@ -1,8 +1,8 @@
 {
-  "enabled": true,
-  "rootPath": "/content",
-  "scheduler.expression": "0 0 0 * * ?",
-  "highThreshold": 2048,
-  "mediumThreshold": 1024
+  "enabled": "$[env:COMPLEXITY_ANALYZER_ENABLED;default=true]",
+  "rootPath": "$[env:COMPLEXITY_ANALYZER_ROOT_PATH;default=/content]",
+  "scheduler.expression": "$[env:COMPLEXITY_ANALYZER_CRON;default=0 0 0 * * ?]",
+  "highThreshold": "$[env:COMPLEXITY_ANALYZER_HIGH_THRESHOLD;default=2048]",
+  "mediumThreshold": "$[env:COMPLEXITY_ANALYZER_MEDIUM_THRESHOLD;default=1024]"
 }
 
